@@ -1,9 +1,7 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+exports.handler = async function(event) {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
   }
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -12,11 +10,15 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
         'x-api-key': process.env.ANTHROPIC_API_KEY,
       },
-      body: JSON.stringify(req.body),
+      body: event.body,
     });
     const data = await response.json();
-    return res.status(response.status).json(data);
+    return {
+      statusCode: response.status,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify(data),
+    };
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
-}
+};
