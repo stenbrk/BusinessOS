@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusinessOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --night:#0A0E1A;--night2:#111827;--night3:#1C2333;--slate:#252D3D;--slate2:#2E3848;
+  --cream:#F7F4EF;--cream2:#EDE9E0;--cream3:#E2DDD4;
+  --gold:#C9A84C;--gold2:#E2C47A;--gold3:#A8883A;
+  --gold-glow:rgba(201,168,76,0.12);--gold-line:rgba(201,168,76,0.25);
+  --ink:#0A0E1A;--ink2:#4A5568;--ink3:#718096;
+  --light:#F7F4EF;--light2:#C8C4BC;--light3:#8892A4;
+  --emerald:#10B981;--emerald-bg:rgba(16,185,129,0.1);--emerald-text:#059669;
+  --amber:#F59E0B;--amber-bg:rgba(245,158,11,0.1);--amber-text:#D97706;
+  --rose:#F43F5E;--rose-bg:rgba(244,63,94,0.1);--rose-text:#E11D48;
+  --sky:#3B82F6;--sky-bg:rgba(59,130,246,0.1);--sky-text:#2563EB;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);font-size:13.5px;line-height:1.5;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+
+/* ── ONBOARDING ── */
+#onboarding{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--night);background-image:radial-gradient(ellipse 60% 50% at 70% 20%, rgba(201,168,76,0.07) 0%, transparent 70%),radial-gradient(ellipse 40% 60% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 70%);}
+#onboarding.hidden{display:none}
+.ob-wrap{width:100%;max-width:460px;padding:20px;}
+.ob-header{text-align:center;margin-bottom:40px}
+.ob-logo-mark{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg, var(--gold3), var(--gold2));display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 0 30px rgba(201,168,76,0.3);}
+.ob-logo-mark i{font-size:22px;color:var(--night)}
+.ob-brand{font-family:'Playfair Display',serif;font-size:28px;color:var(--light);letter-spacing:-0.5px;margin-bottom:8px}
+.ob-brand span{color:var(--gold)}
+.ob-tagline{font-size:13px;color:var(--light3);font-weight:300;letter-spacing:0.02em}
+.ob-card{background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:var(--r-xl);padding:32px;backdrop-filter:blur(10px);}
+.ob-section-title{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.ob-section-title::after{content:'';flex:1;height:1px;background:var(--gold-line)}
+.ob-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ob-field{margin-bottom:14px}
+.ob-label{display:block;font-size:11px;font-weight:500;color:var(--light3);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;}
+.ob-input{width:100%;padding:10px 13px;font-size:13px;font-family:'Inter',sans-serif;border:1px solid rgba(255,255,255,0.1);border-radius:var(--r);background:rgba(255,255,255,0.05);color:var(--light);outline:none;transition:border-color 0.2s,background 0.2s;}
+.ob-input::placeholder{color:rgba(255,255,255,0.2)}
+.ob-input:focus{border-color:var(--gold);background:rgba(201,168,76,0.06)}
+.ob-input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.6)}
+.ob-btn{width:100%;margin-top:6px;padding:13px;border-radius:var(--r);border:none;background:linear-gradient(135deg, var(--gold3), var(--gold2));color:var(--night);font-size:13.5px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity 0.2s,transform 0.15s,box-shadow 0.2s;display:flex;align-items:center;justify-content:center;gap:9px;letter-spacing:0.01em;box-shadow:0 4px 20px rgba(201,168,76,0.25);}
+.ob-btn:hover{opacity:0.92;box-shadow:0 6px 28px rgba(201,168,76,0.38)}
+.ob-btn:active{transform:scale(0.99)}
+.ob-err{font-size:12px;color:var(--rose-text);margin-top:10px;display:none;text-align:center}
+
+/* ── SHELL ── */
+.shell{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;flex-shrink:0;background:var(--night);display:flex;flex-direction:column;border-right:1px solid rgba(201,168,76,0.1);position:relative;}
+.sidebar::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.2) 30%,rgba(201,168,76,0.2) 70%,transparent);pointer-events:none;}
+.sb-logo{padding:22px 20px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.05);margin-bottom:6px;}
+.sb-logo-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold3),var(--gold2));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(201,168,76,0.3);flex-shrink:0;}
+.sb-logo-icon i{font-size:14px;color:var(--night)}
+.sb-brand{font-family:'Playfair Display',serif;font-size:16px;color:var(--light);letter-spacing:-0.3px}
+.sb-brand span{color:var(--gold)}
+.nav{padding:10px 10px 0;flex:1}
+.nav-section{font-size:9.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--light3);padding:12px 10px 5px;}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);border:none;background:transparent;font-size:13px;font-family:'Inter',sans-serif;color:var(--light3);cursor:pointer;width:100%;text-align:left;transition:all 0.15s;position:relative;}
+.nav-btn:hover{background:rgba(255,255,255,0.05);color:var(--light)}
+.nav-btn.active{background:rgba(201,168,76,0.1);color:var(--gold2);}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:60%;border-radius:2px;background:var(--gold);}
+.nav-btn i{font-size:15px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:rgba(244,63,94,0.2);color:#F87171;font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;}
+.sb-bottom{padding:14px 10px;border-top:1px solid rgba(255,255,255,0.05);}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold3),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--night);flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,0.25);}
+.user-name{font-size:12px;font-weight:500;color:var(--light2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.user-role{font-size:11px;color:var(--light3)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--cream)}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--cream3);display:flex;align-items:center;justify-content:space-between;background:var(--cream);}
+.page-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--ink);letter-spacing:-0.3px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.top-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold3),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--night);cursor:pointer;}
+.content{flex:1;overflow-y:auto;padding:28px;scroll-behavior:smooth}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--cream3);border-radius:4px}
+.fade-in{animation:fadeUp 0.22s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── COMPONENTS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:var(--r);border:1px solid var(--cream3);background:white;color:var(--ink);font-size:12.5px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn:hover{background:var(--cream2);border-color:var(--cream3)}
+.btn:active{transform:scale(0.98)}
+.btn-gold{background:linear-gradient(135deg,var(--gold3),var(--gold2));border-color:transparent;color:var(--night);box-shadow:0 2px 12px rgba(201,168,76,0.2);}
+.btn-gold:hover{opacity:0.9;background:linear-gradient(135deg,var(--gold3),var(--gold2))}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--ink2)}
+.btn-ghost:hover{background:var(--cream2)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Search */
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3);pointer-events:none}
+.search-input{width:100%;padding:9px 12px 9px 34px;font-size:13px;font-family:'Inter',sans-serif;border:1px solid var(--cream3);border-radius:var(--r);background:white;color:var(--ink);outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+.search-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:6px;letter-spacing:0.05em;text-transform:uppercase;}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],select,textarea{width:100%;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;border:1px solid var(--cream3);border-radius:var(--r);background:white;color:var(--ink);outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+textarea{resize:vertical;min-height:90px;line-height:1.6}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+
+.card{background:white;border:1px solid var(--cream3);border-radius:var(--r-xl);padding:20px 22px;margin-bottom:12px;}
+.card-gold{border-color:var(--gold-line);background:linear-gradient(135deg,#FFFDF7,white);}
+.section-label{font-size:10.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--cream3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap;letter-spacing:0.01em}
+.badge-green{background:var(--emerald-bg);color:var(--emerald-text)}
+.badge-amber{background:var(--amber-bg);color:var(--amber-text)}
+.badge-red{background:var(--rose-bg);color:var(--rose-text)}
+.badge-blue{background:var(--sky-bg);color:var(--sky-text)}
+.badge-gold{background:rgba(201,168,76,0.1);color:var(--gold3)}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.metric{background:white;border:1px solid var(--cream3);border-radius:var(--r-xl);padding:18px 20px;transition:border-color 0.2s,box-shadow 0.2s;position:relative;overflow:hidden;}
+.metric:hover{border-color:var(--gold-line);box-shadow:0 4px 20px rgba(0,0,0,0.05)}
+.metric::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-line),transparent);opacity:0;transition:opacity 0.2s;}
+.metric:hover::before{opacity:1}
+.metric-label{font-size:10.5px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.metric-val{font-family:'Playfair Display',serif;font-size:26px;color:var(--ink);letter-spacing:-0.5px;margin-bottom:4px}
+.metric-sub{font-size:11.5px;color:var(--ink3)}
+.metric-sub.up{color:var(--emerald-text)}
+.metric-sub.down{color:var(--rose-text)}
+.metric-empty{color:var(--cream3);font-family:'Playfair Display',serif;font-size:22px}
+
+/* Dashboard alerts */
+.alert-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.alert-pill{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.alert-pill.warn{background:var(--amber-bg);color:var(--amber-text);border-color:rgba(245,158,11,0.2)}
+.alert-pill.danger{background:var(--rose-bg);color:var(--rose-text);border-color:rgba(244,63,94,0.2)}
+.alert-pill i{font-size:13px}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 20px;text-align:center;gap:10px;color:var(--ink3);}
+.empty i{font-size:28px;color:var(--cream3)}
+.empty p{font-size:13px;max-width:220px}
+
+.task-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--cream2);animation:fadeUp 0.15s ease;}
+.task-item:last-child{border-bottom:none}
+.task-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--cream3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.task-check:hover{border-color:var(--gold)}
+.task-check.done{background:linear-gradient(135deg,var(--gold3),var(--gold2));border-color:transparent}
+.task-text{flex:1;font-size:13px;color:var(--ink)}
+.task-text.done{text-decoration:line-through;color:var(--ink3)}
+.task-prio{font-size:11px;color:var(--ink3);white-space:nowrap}
+.task-del{opacity:0;cursor:pointer;color:var(--ink3);font-size:13px;transition:opacity 0.15s;background:none;border:none;padding:2px;line-height:1}
+.task-item:hover .task-del{opacity:1}
+
+/* Chat */
+.chat-area{display:flex;flex-direction:column;height:450px}
+.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:4px;padding-right:4px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--cream3)}
+.msg{max-width:82%;padding:11px 15px;border-radius:var(--r-xl);font-size:13px;line-height:1.65;animation:fadeUp 0.2s ease}
+.msg-ai{background:var(--cream);color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--cream3)}
+.msg-user{background:linear-gradient(135deg,var(--gold3),var(--gold2));color:var(--night);align-self:flex-end;border-bottom-right-radius:4px;font-weight:500;}
+.chat-input-row{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--cream2)}
+.chat-input-row input{flex:1}
+.typing-dots{display:flex;gap:4px;padding:3px 0}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--ink3);animation:bounce 1.3s infinite}
+.dot:nth-child(2){animation-delay:.18s}
+.dot:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+/* Client list */
+.client-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--cream2)}
+.client-item:last-child{border-bottom:none}
+.initials{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.client-info{flex:1}
+.client-name{font-size:13px;font-weight:500;color:var(--ink)}
+.client-sub{font-size:12px;color:var(--ink3);margin-top:1px}
+
+/* Facturen */
+.invoice-row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--cream2);gap:12px}
+.invoice-row:last-child{border-bottom:none}
+.inv-num{font-size:11.5px;color:var(--ink3);width:76px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.inv-name{flex:1;font-size:13px;color:var(--ink)}
+.inv-amt{font-size:13px;font-weight:600;width:84px;text-align:right;flex-shrink:0;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* Voorstel */
+.voorstel-card{background:linear-gradient(135deg,#FFFDF7,white);border:1px solid var(--gold-line);border-radius:var(--r-xl);padding:24px;margin-top:20px;}
+
+
+
+/* AI Dashboard Panel */
+.ai-panel{background:var(--night);border-radius:var(--r-xl);padding:22px 24px;margin-bottom:22px;position:relative;overflow:hidden;border:1px solid rgba(201,168,76,0.18);}
+.ai-panel::before{content:'';position:absolute;top:0;right:0;width:300px;height:100%;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(201,168,76,0.07) 0%,transparent 70%);pointer-events:none;}
+.ai-panel-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.ai-panel-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--gold3),var(--gold2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 12px rgba(201,168,76,0.3);}
+.ai-panel-icon i{font-size:15px;color:var(--night)}
+.ai-panel-title{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold2)}
+.ai-actions{display:flex;flex-direction:column;gap:8px}
+.ai-action{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-lg);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:all 0.15s;text-align:left;width:100%;}
+.ai-action:hover{background:rgba(201,168,76,0.08);border-color:rgba(201,168,76,0.2);}
+.ai-action-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;}
+.ai-action-icon.red{background:rgba(244,63,94,0.15);color:#F87171}
+.ai-action-icon.amber{background:rgba(245,158,11,0.15);color:#FBB740}
+.ai-action-icon.emerald{background:rgba(16,185,129,0.15);color:#34D399}
+.ai-action-icon.sky{background:rgba(59,130,246,0.15);color:#60A5FA}
+.ai-action-icon.gold{background:rgba(201,168,76,0.15);color:var(--gold2)}
+.ai-action-body{flex:1;min-width:0}
+.ai-action-text{font-size:13px;color:var(--light);font-weight:500;line-height:1.35}
+.ai-action-sub{font-size:11px;color:var(--light3);margin-top:2px}
+.ai-action-arrow{color:var(--light3);font-size:13px;flex-shrink:0;transition:transform 0.15s}
+.ai-action:hover .ai-action-arrow{transform:translateX(2px);color:var(--gold2)}
+.ai-loading{display:flex;align-items:center;gap:10px;padding:14px;color:var(--light3);font-size:13px}
+.ai-resp{padding:14px;background:rgba(255,255,255,0.04);border-radius:var(--r-lg);margin-top:8px;border:1px solid rgba(255,255,255,0.07);}
+.ai-resp-text{font-size:13px;color:var(--light2);line-height:1.65}
+.ai-ask-row{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)}
+.ai-ask-input{flex:1;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;border:1px solid rgba(255,255,255,0.1);border-radius:var(--r);background:rgba(255,255,255,0.05);color:var(--light);outline:none;transition:border-color 0.2s;}
+.ai-ask-input::placeholder{color:rgba(255,255,255,0.25)}
+.ai-ask-input:focus{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+
+/* Toast */
+#toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9000;pointer-events:none}
+.toast{display:flex;align-items:center;gap:11px;padding:12px 16px;border-radius:var(--r-xl);background:var(--night);color:var(--light);font-size:13px;min-width:210px;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,0.2);animation:toastIn 0.25s ease;pointer-events:all;border:1px solid rgba(255,255,255,0.06);}
+.toast.out{animation:toastOut 0.25s ease forwards}
+.toast i{font-size:15px;flex-shrink:0}
+.toast.toast-success i{color:var(--emerald)}
+.toast.toast-error i{color:var(--rose)}
+.toast.toast-info i{color:var(--gold2)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(4px) scale(0.97)}}
+
+@media(max-width:600px){
+  .sidebar{display:none}
+  .metrics{grid-template-columns:1fr 1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .ob-grid{grid-template-columns:1fr}
+  .content{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-wrap">
+    <div class="ob-header">
+      <div class="ob-logo-mark"><i class="ti ti-building-skyscraper"></i></div>
+      <div class="ob-brand">Business<span>OS</span></div>
+      <div class="ob-tagline">Jouw zakelijke werkruimte</div>
+    </div>
+    <div class="ob-card">
+      <div class="ob-field">
+        <label class="ob-label">Bedrijfsnaam *</label>
+        <input class="ob-input" id="ob-bedrijf" type="text" placeholder="Jouw Bedrijf BV" autocomplete="organization" onkeydown="if(event.key==='Enter')document.getElementById('ob-naam').focus()">
+      </div>
+      <div class="ob-field" style="margin-bottom:22px">
+        <label class="ob-label">Jouw naam *</label>
+        <input class="ob-input" id="ob-naam" type="text" placeholder="Jan de Vries" autocomplete="name" onkeydown="if(event.key==='Enter')finishOnboarding()">
+      </div>
+      <div id="ob-err" class="ob-err">Vul je bedrijfsnaam en naam in om verder te gaan.</div>
+      <button class="ob-btn" onclick="finishOnboarding()"><i class="ti ti-arrow-right"></i>Start BusinessOS</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="shell" id="app" style="display:none">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon"><i class="ti ti-building-skyscraper"></i></div>
+      <div class="sb-brand">Business<span>OS</span></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Overzicht</div>
+      <button class="nav-btn active" onclick="show('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+      <div class="nav-section">Werk</div>
+      <button class="nav-btn" onclick="show('voorstel',this)"><i class="ti ti-file-invoice"></i>Voorstel</button>
+      <button class="nav-btn" onclick="show('facturen',this)"><i class="ti ti-receipt"></i>Facturen</button>
+      <button class="nav-btn" onclick="show('taken',this)"><i class="ti ti-checkbox"></i>Taken<span class="nav-badge" id="taken-badge" style="display:none">0</span></button>
+      <div class="nav-section">Relaties</div>
+      <button class="nav-btn" onclick="show('klanten',this)"><i class="ti ti-users"></i>Klanten</button>
+
+    </nav>
+    <div class="sb-bottom">
+      <div class="user-chip">
+        <div class="user-av" id="sb-avatar"></div>
+        <div style="min-width:0">
+          <div class="user-name" id="sb-name"></div>
+          <div class="user-role" id="sb-bedrijf"></div>
+        </div>
+      </div>
+      <button onclick="resetBusinessOS()" title="Reset alle data (dev)" style="margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;border-radius:var(--r);border:1px dashed rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.2);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.15s;letter-spacing:0.02em" onmouseover="this.style.color='rgba(244,63,94,0.6)';this.style.borderColor='rgba(244,63,94,0.2)'" onmouseout="this.style.color='rgba(255,255,255,0.2)';this.style.borderColor='rgba(255,255,255,0.08)'">
+        <i class="ti ti-refresh" style="font-size:12px"></i>Reset (dev)
+      </button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+
+        <div class="top-av" id="top-avatar"></div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE + PERSISTENCE
+// ─────────────────────────────────────────────
+const STORAGE_KEY = 'businessos_v2';
+
+function resetBusinessOS() {
+  if (!confirm('Alle data wissen en opnieuw beginnen?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ userProfile, tasks, klanten, facturen, chatHistory }));
+  } catch(e) { /* quota */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    userProfile  = s.userProfile  || {};
+    tasks        = s.tasks        || [];
+    klanten      = s.klanten      || [];
+    facturen     = s.facturen     || [];
+    chatHistory  = s.chatHistory  || [];
+    return !!userProfile.naam;
+  } catch(e) { return false; }
+}
+
+let userProfile = {};
+let tasks       = [];
+let klanten     = [];
+let facturen    = [];
+let chatHistory = [];
+
+// ─────────────────────────────────────────────
+//  API KEY (not required – proxy handles auth)
+// ─────────────────────────────────────────────
+function getApiKey() { return true; }
+function openApiModal()  {}
+function closeApiModal() {}
+
+// ─────────────────────────────────────────────
+//  ONBOARDING
+// ─────────────────────────────────────────────
+function finishOnboarding() {
+  const naam    = document.getElementById('ob-naam').value.trim();
+  const bedrijf = document.getElementById('ob-bedrijf').value.trim();
+  if (!naam || !bedrijf) { document.getElementById('ob-err').style.display='block'; return; }
+  document.getElementById('ob-err').style.display = 'none';
+  userProfile = { naam, bedrijf };
+  saveState();
+  launchApp();
+}
+
+function launchApp() {
+  const ini = userProfile.naam.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sb-avatar').textContent  = ini;
+  document.getElementById('top-avatar').textContent = ini;
+  document.getElementById('sb-name').textContent    = userProfile.naam;
+  document.getElementById('sb-bedrijf').textContent = userProfile.bedrijf || 'Mijn bedrijf';
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  updateBadge();
+  loadPage('dashboard');
+}
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+function toast(msg, type='info', icon='ti-info-circle') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<i class="ti ${icon}"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),280); }, 3200);
+}
+
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+function show(page, btn) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadPage(page);
+}
+
+function loadPage(page) {
+  const titles = { dashboard:'Dashboard', voorstel:'Nieuw voorstel', taken:'Taken', klanten:'Klanten', facturen:'Facturen' };
+  document.getElementById('page-title').textContent = titles[page];
+  const c = document.getElementById('content');
+  c.classList.remove('fade-in'); void c.offsetWidth;
+  c.innerHTML = pages[page]();
+  c.classList.add('fade-in');
+  if (page === 'taken') renderTasks();
+}
+
+function updateBadge() {
+  const open   = tasks.filter(t=>!t.done).length;
+  const badge  = document.getElementById('taken-badge');
+  if (badge) { badge.textContent = open; badge.style.display = open > 0 ? '' : 'none'; }
+}
+
+// ─────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────
+function fmt(n) { return n > 0 ? '€\u00A0' + n.toLocaleString('nl-NL') : '—'; }
+
+function thisMonthTotal() {
+  const now = new Date();
+  return facturen.filter(f => {
+    if (f.status !== 'Betaald' || !f.datum) return false;
+    const d = new Date(f.datum);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).reduce((s,f) => s+f.bedrag, 0);
+}
+
+function upcomingTasks() {
+  const in7 = new Date(); in7.setDate(in7.getDate()+7);
+  return tasks.filter(t => !t.done && t.rawDatum && new Date(t.rawDatum) <= in7);
+}
+
+function overdueFacturen() {
+  const today = new Date();
+  return facturen.filter(f => f.status === 'Openstaand' && f.vervaldatum && new Date(f.vervaldatum) < today);
+}
+
+// ─────────────────────────────────────────────
+//  PAGES
+// ─────────────────────────────────────────────
+const pages = {
+
+  // ── Dashboard ──────────────────────────────
+  dashboard() {
+    const voornaam    = userProfile.naam.split(' ')[0];
+    const now         = new Date();
+    const openAmt     = facturen.filter(f=>f.status==='Openstaand').reduce((s,f)=>s+f.bedrag,0);
+    const openTaken   = tasks.filter(t=>!t.done).length;
+    const maand       = thisMonthTotal();
+    const upcoming    = upcomingTasks();
+    const overdue     = overdueFacturen();
+    const totalKlanten= klanten.length;
+
+    const in14 = new Date(); in14.setDate(in14.getDate()+14);
+    const soonDue = facturen.filter(f =>
+      f.status==='Openstaand' && f.vervaldatum &&
+      new Date(f.vervaldatum) >= now && new Date(f.vervaldatum) <= in14
+    ).sort((a,b)=>new Date(a.vervaldatum)-new Date(b.vervaldatum));
+
+    const recentKlanten = [...klanten].slice(-3).reverse();
+
+    const prevMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const vorige = facturen.filter(f=>{
+      if(f.status!=='Betaald'||!f.datum) return false;
+      const d=new Date(f.datum);
+      return d.getMonth()===prevMonth.getMonth()&&d.getFullYear()===prevMonth.getFullYear();
+    }).reduce((s,f)=>s+f.bedrag,0);
+    const maandDelta = vorige > 0 ? Math.round(((maand-vorige)/vorige)*100) : null;
+
+    // ── Build AI action cards from real data ──
+    const aiActions = [];
+
+    if (openAmt > 0) {
+      const overdueLabel = overdue.length > 0 ? ` — ${overdue.length} verlopen` : '';
+      aiActions.push({ icon:'ti-receipt', color:'red', text:`Je hebt ${fmt(openAmt)} aan openstaande facturen${overdueLabel}.`, sub:'Stuur een herinnering of bekijk de facturen.', action:`aiActie('facturen_open')` });
+    }
+    if (overdue.length > 0) {
+      const names = overdue.slice(0,2).map(f=>f.naam).join(', ') + (overdue.length>2?` en ${overdue.length-2} anderen`:'');
+      aiActions.push({ icon:'ti-alert-circle', color:'red', text:`Verlopen factuur bij ${names}.`, sub:'AI stelt een herinnering op die je direct kunt versturen.', action:`aiActie('herinnering', '${names}')` });
+    }
+    if (soonDue.length > 0) {
+      const f = soonDue[0];
+      const diff = Math.round((new Date(f.vervaldatum)-now)/86400000);
+      aiActions.push({ icon:'ti-clock', color:'amber', text:`Factuur ${f.naam} vervalt ${diff===0?'vandaag':diff===1?'morgen':'over '+diff+' dagen'} (${fmt(f.bedrag)}).`, sub:'Volg op of markeer als betaald.', action:`aiActie('soondue', '${f.naam}')` });
+    }
+    const openTasksThisWeek = upcoming.filter(t=>{ const d=new Date(t.rawDatum); return (d-now)/86400000<=2; });
+    if (openTasksThisWeek.length > 0) {
+      aiActions.push({ icon:'ti-checkbox', color:'amber', text:`${openTasksThisWeek.length} ${openTasksThisWeek.length===1?'taak vervalt':'taken vervallen'} binnen 48 uur.`, sub: openTasksThisWeek.slice(0,2).map(t=>t.text).join(' · '), action:`aiActie('taken_urgent')` });
+    }
+
+    // Omzetdoel-suggestie (alleen als er data is)
+    const doelMaand = maand > 0 && vorige > 0 ? Math.round(vorige * 1.1) : 0;
+    if (doelMaand > 0 && maand < doelMaand) {
+      aiActions.push({ icon:'ti-trending-up', color:'emerald', text:`Je omzetdoel voor ${now.toLocaleDateString('nl-NL',{month:'long'})} is nog ${fmt(doelMaand-maand)} verwijderd.`, sub:'Vraag AI om een actieplan om het doel te halen.', action:`aiActie('omzet_doel')` });
+    }
+    if (klanten.filter(k=>k.status==='Lead').length > 0) {
+      const leads = klanten.filter(k=>k.status==='Lead');
+      aiActions.push({ icon:'ti-user-plus', color:'sky', text:`${leads.length} ${leads.length===1?'lead staat':'leads staan'} open: ${leads.slice(0,2).map(k=>k.naam).join(', ')}.`, sub:'AI schrijft een follow-up e-mail.', action:`aiActie('leads', '${leads.slice(0,2).map(k=>k.naam).join(', ')}')` });
+    }
+
+    // Fallback als er geen data is
+    if (aiActions.length === 0) {
+      aiActions.push({ icon:'ti-sparkles', color:'gold', text:`Goedemorgen, ${voornaam}. Voeg klanten, facturen of taken toe.`, sub:'BusinessOS analyseert je data en geeft proactief advies.', action:`aiActie('intro')` });
+    }
+
+    return `
+    <div style="margin-bottom:20px;display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px">Goedendag</div>
+        <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--ink);letter-spacing:-0.5px">${voornaam}</div>
+      </div>
+      <div style="font-size:12px;color:var(--ink3)">${now.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'})}</div>
+    </div>
+
+    <!-- ── AI PROACTIEF PANEL ── -->
+    <div class="ai-panel">
+      <div class="ai-panel-head">
+        <div class="ai-panel-icon"><i class="ti ti-sparkles"></i></div>
+        <div>
+          <div class="ai-panel-title">BusinessOS · AI-inzichten</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:1px">Dit zijn de acties die er vandaag toe doen</div>
+        </div>
+      </div>
+      <div class="ai-actions" id="ai-actions-list">
+        ${aiActions.map(a=>`
+          <button class="ai-action" onclick="${a.action}">
+            <div class="ai-action-icon ${a.color}"><i class="ti ${a.icon}"></i></div>
+            <div class="ai-action-body">
+              <div class="ai-action-text">${a.text}</div>
+              ${a.sub ? `<div class="ai-action-sub">${a.sub}</div>` : ''}
+            </div>
+            <i class="ti ti-chevron-right ai-action-arrow"></i>
+          </button>`).join('')}
+      </div>
+      <div id="ai-response-area"></div>
+      <div class="ai-ask-row">
+        <input class="ai-ask-input" type="text" id="ai-dash-input" placeholder="Stel een vraag over jouw bedrijf..." onkeydown="if(event.key==='Enter')aiDashAsk()">
+        <button class="btn btn-gold btn-sm" onclick="aiDashAsk()"><i class="ti ti-send"></i></button>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Omzet deze maand</div>
+        <div class="metric-val">${maand > 0 ? fmt(maand) : '<span class="metric-empty">—</span>'}</div>
+        <div class="metric-sub ${maandDelta!==null?(maandDelta>=0?'up':'down'):''}">
+          ${maandDelta!==null ? (maandDelta>=0?'↑':'↓')+' '+Math.abs(maandDelta)+'% vs vorige maand' : now.toLocaleDateString('nl-NL',{month:'long'})}
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Openstaande facturen</div>
+        <div class="metric-val">${openAmt > 0 ? fmt(openAmt) : '<span class="metric-empty">—</span>'}</div>
+        <div class="metric-sub ${overdue.length?'down':''}">${overdue.length ? overdue.length+' verlopen' : facturen.filter(f=>f.status==='Openstaand').length+' open'}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Totaal klanten</div>
+        <div class="metric-val">${totalKlanten || '<span class="metric-empty">—</span>'}</div>
+        <div class="metric-sub">${klanten.filter(k=>k.status==='Actief').length} actief · ${klanten.filter(k=>k.status==='Lead').length} leads</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Openstaande taken</div>
+        <div class="metric-val">${openTaken || '<span class="metric-empty">—</span>'}</div>
+        <div class="metric-sub ${upcoming.length?'down':''}">${upcoming.length ? upcoming.length+' deze week' : tasks.filter(t=>t.done).length+' afgerond'}</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="section-label">Komende taken (7 dagen)</div>
+        <div class="card">
+          ${upcoming.slice(0,5).length > 0
+            ? upcoming.slice(0,5).map(t=>{
+                const d = t.rawDatum ? new Date(t.rawDatum) : null;
+                const diff = d ? Math.round((d-now)/86400000) : null;
+                const urgent = diff !== null && diff <= 1;
+                return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--cream2)">
+                  <div style="width:3px;height:32px;border-radius:2px;flex-shrink:0;background:${urgent?'var(--rose)':'var(--gold)'}"></div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.text}</div>
+                    ${t.prio?`<div style="font-size:11px;color:${urgent?'var(--rose-text)':'var(--ink3)'};margin-top:1px">${t.prio}</div>`:''}
+                  </div>
+                  ${urgent?`<span class="badge badge-red" style="font-size:10px">Urgent</span>`:''}
+                </div>`;
+              }).join('')
+            : `<div class="empty"><i class="ti ti-calendar-check"></i><p>Geen taken voor de komende 7 dagen.</p></div>`
+          }
+        </div>
+        <div class="section-label" style="margin-top:4px">Recent toegevoegde klanten</div>
+        <div class="card">
+          ${recentKlanten.length > 0
+            ? recentKlanten.map(k=>`
+              <div class="client-item" style="padding:10px 0">
+                <div class="initials" style="background:${k.kleur}18;color:${k.kleur};width:34px;height:34px;font-size:11px">${k.naam.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+                <div class="client-info">
+                  <div class="client-name">${k.naam}</div>
+                  <div class="client-sub">${[k.contact,k.email].filter(Boolean).join(' · ')||'—'}</div>
+                </div>
+                <span class="badge ${k.status==='Actief'?'badge-green':k.status==='Lead'?'badge-gold':'badge-amber'}">${k.status}</span>
+              </div>`).join('')
+            : `<div class="empty" style="padding:24px 0"><i class="ti ti-users"></i><p>Nog geen klanten.</p></div>`
+          }
+        </div>
+      </div>
+      <div>
+        <div class="section-label">Facturen die binnenkort vervallen</div>
+        <div class="card">
+          ${soonDue.length > 0
+            ? soonDue.map(f=>{
+                const d = new Date(f.vervaldatum);
+                const diff = Math.round((d-now)/86400000);
+                return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--cream2)">
+                  <div style="width:3px;height:36px;border-radius:2px;flex-shrink:0;background:${diff<=3?'var(--rose)':'var(--amber)'}"></div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;color:var(--ink);font-weight:500">${f.naam}</div>
+                    <div style="font-size:11.5px;color:var(--ink3);margin-top:1px">${f.nr||''} · ${fmt(f.bedrag)}</div>
+                  </div>
+                  <div style="text-align:right;flex-shrink:0">
+                    <div style="font-size:12px;font-weight:600;color:${diff<=3?'var(--rose-text)':'var(--amber-text)'}">${diff===0?'Vandaag':diff===1?'Morgen':'Over '+diff+' dagen'}</div>
+                    <div style="font-size:11px;color:var(--ink3);margin-top:1px">${d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}</div>
+                  </div>
+                </div>`;
+              }).join('')
+            : `<div class="empty" style="padding:24px 0"><i class="ti ti-circle-check"></i><p>Geen facturen die binnenkort vervallen.</p></div>`
+          }
+        </div>
+        <div class="section-label" style="margin-top:4px">Recente facturen</div>
+        <div class="card">
+          ${facturen.slice(0,4).length > 0
+            ? facturen.slice(0,4).map(f=>`
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--cream2)">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.naam}</div>
+                  <div style="font-size:11.5px;color:var(--ink3);margin-top:1px">${f.nr||''} · ${fmt(f.bedrag)}</div>
+                </div>
+                <span class="badge ${f.status==='Betaald'?'badge-green':f.status==='Openstaand'?'badge-amber':'badge-red'}" style="margin-left:10px">${f.status}</span>
+              </div>`).join('')
+            : `<div class="empty" style="padding:24px 0"><i class="ti ti-receipt"></i><p>Geen facturen.</p></div>`
+          }
+        </div>
+      </div>
+    </div>`;
+  },
+
+  // ── Voorstel ───────────────────────────────
+  voorstel() {
+    return `
+    <div style="max-width:600px">
+      <div style="margin-bottom:22px">
+        <div style="font-size:13px;color:var(--ink2);line-height:1.6">Vul de gegevens in en laat de AI een professioneel voorstel schrijven dat je direct kunt versturen.</div>
+      </div>
+      <div class="card">
+        <div class="section-label">Klantgegevens</div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Klant *</label><input type="text" id="v-klant" placeholder="Bedrijfsnaam"></div>
+          <div class="form-group"><label class="form-label">Contactpersoon</label><input type="text" id="v-contact" placeholder="Naam"></div>
+        </div>
+        <div class="section-label" style="margin-top:8px">Opdracht</div>
+        <div class="form-group"><label class="form-label">Onderwerp *</label><input type="text" id="v-onderwerp" placeholder="bijv. Website redesign"></div>
+        <div class="form-group"><label class="form-label">Omschrijving</label><textarea id="v-omschrijving" placeholder="Beschrijf wat je levert..."></textarea></div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Bedrag (€)</label><input type="text" id="v-bedrag" placeholder="0,00"></div>
+          <div class="form-group"><label class="form-label">Geldig tot</label><input type="date" id="v-geldig"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="aiVoorstel()"><i class="ti ti-sparkles"></i>AI schrijft voorstel</button>
+        </div>
+      </div>
+      <div id="voorstel-output"></div>
+    </div>`;
+  },
+
+  // ── AI ─────────────────────────────────────
+  ai() {
+    const voornaam = userProfile.naam.split(' ')[0];
+    return `
+    <div style="max-width:660px">
+      <div class="card chat-area">
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg msg-ai" style="border-color:var(--gold-line);background:linear-gradient(135deg,#FFFDF7,white)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <i class="ti ti-sparkles" style="color:var(--gold);font-size:14px"></i>
+              <span style="font-size:11px;font-weight:600;color:var(--gold3);letter-spacing:0.04em;text-transform:uppercase">AI-assistent</span>
+            </div>
+            Goedendag, ${voornaam}. Hoe kan ik je vandaag helpen? Ik kan offertes schrijven, e-mails opstellen, advies geven of planningen maken.
+          </div>
+          ${chatHistory.filter(m=>m.role!=='system').map(m=>`<div class="msg msg-${m.role==='user'?'user':'ai'}">${m.content.replace(/\n/g,'<br>')}</div>`).join('')}
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-in" placeholder="Stel een vraag of geef een opdracht..." onkeydown="if(event.key==='Enter')aiSend()">
+          <button class="btn btn-gold btn-sm" onclick="aiSend()"><i class="ti ti-send"></i></button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        ${['Schrijf een follow-up e-mail','Tips voor meer omzet','Maak een agenda voor morgen','Hoe verbeter ik mijn offertes?'].map(q=>`
+          <button class="btn btn-sm" style="color:var(--ink2);font-size:12px" onclick="quickAsk('${q}')">${q}</button>`).join('')}
+      </div>
+      ${chatHistory.length > 0 ? `<div style="margin-top:10px;text-align:right"><button class="btn btn-sm btn-ghost" onclick="clearChat()"><i class="ti ti-trash"></i>Gesprek wissen</button></div>` : ''}
+    </div>`;
+  },
+
+  // ── Taken ──────────────────────────────────
+  taken() {
+    return `
+    <div style="max-width:540px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--ink2)">
+          <span style="font-weight:600;color:var(--ink)" id="taken-open-count">${tasks.filter(t=>!t.done).length}</span> open
+          &nbsp;·&nbsp;
+          <span style="color:var(--emerald-text)" id="taken-done-count">${tasks.filter(t=>t.done).length}</span> afgerond
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="clearDone()"><i class="ti ti-trash"></i>Verwijder afgerond</button>
+      </div>
+      <div class="card">
+        <div id="task-list"></div>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div class="section-label">Nieuwe taak</div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Omschrijving</label><input type="text" id="new-task-input" placeholder="Wat moet er gedaan worden?" onkeydown="if(event.key==='Enter')addTask()"></div>
+          <div class="form-group"><label class="form-label">Datum</label><input type="date" id="new-task-datum"></div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="addTask()"><i class="ti ti-plus"></i>Taak toevoegen</button>
+      </div>
+    </div>`;
+  },
+
+  // ── Klanten ────────────────────────────────
+  klanten() {
+    return `
+    <div style="max-width:580px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--ink2)"><span style="font-weight:600;color:var(--ink)" id="klant-count">${klanten.length}</span> relaties</div>
+        <button class="btn btn-gold btn-sm" onclick="toonKlantForm()"><i class="ti ti-plus"></i>Toevoegen</button>
+      </div>
+
+      <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input class="search-input" type="text" id="klant-search" placeholder="Zoek klant op naam, e-mail of status…" oninput="filterKlanten()">
+      </div>
+
+      <div class="card" id="klant-form" style="display:none;margin-bottom:14px;border-color:var(--gold-line)">
+        <div class="section-label">Nieuwe relatie</div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Bedrijfsnaam *</label><input type="text" id="kl-naam" placeholder="Naam"></div>
+          <div class="form-group"><label class="form-label">Contactpersoon</label><input type="text" id="kl-contact" placeholder="Naam"></div>
+        </div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="kl-email" placeholder="contact@bedrijf.nl"></div>
+          <div class="form-group"><label class="form-label">Status</label>
+            <select id="kl-status"><option>Actief</option><option>Lead</option><option>Inactief</option></select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" onclick="addKlant()"><i class="ti ti-check"></i>Opslaan</button>
+          <button class="btn btn-sm" onclick="document.getElementById('klant-form').style.display='none'">Annuleer</button>
+        </div>
+      </div>
+
+      <div class="card" id="klant-list">
+        ${renderKlantList(klanten)}
+      </div>
+    </div>`;
+  },
+
+  // ── Facturen ───────────────────────────────
+  facturen() {
+    const betaald = facturen.filter(f=>f.status==='Betaald').reduce((s,f)=>s+f.bedrag,0);
+    const open    = facturen.filter(f=>f.status==='Openstaand').reduce((s,f)=>s+f.bedrag,0);
+    return `
+    <div style="max-width:600px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--ink2)"><span style="font-weight:600;color:var(--ink)">${facturen.length}</span> facturen</div>
+        <button class="btn btn-gold btn-sm" onclick="toonFactuurForm()"><i class="ti ti-plus"></i>Nieuwe factuur</button>
+      </div>
+
+      <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input class="search-input" type="text" id="factuur-search" placeholder="Zoek factuur op naam of nummer…" oninput="filterFacturen()">
+      </div>
+
+      <div class="card" id="factuur-form" style="display:none;margin-bottom:14px;border-color:var(--gold-line)">
+        <div class="section-label">Factuur toevoegen</div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Klant *</label><input type="text" id="fac-naam" placeholder="Bedrijfsnaam"></div>
+          <div class="form-group"><label class="form-label">Factuurnummer</label><input type="text" id="fac-nr" placeholder="${new Date().getFullYear()}-001"></div>
+        </div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Bedrag (€) *</label><input type="number" id="fac-bedrag" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Vervaldatum</label><input type="date" id="fac-verval"></div>
+        </div>
+        <div class="grid2">
+          <div class="form-group"><label class="form-label">Status</label>
+            <select id="fac-status"><option>Openstaand</option><option>Betaald</option><option>Verlopen</option></select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" onclick="addFactuur()"><i class="ti ti-check"></i>Opslaan</button>
+          <button class="btn btn-sm" onclick="document.getElementById('factuur-form').style.display='none'">Annuleer</button>
+        </div>
+      </div>
+
+      <div class="card" id="factuur-list">
+        ${renderFactuurList(facturen)}
+      </div>
+
+      ${facturen.length > 0 ? `
+      <div class="card card-gold" style="display:flex;gap:0;justify-content:space-around;text-align:center;padding:18px">
+        <div><div class="metric-label" style="margin-bottom:6px">Ontvangen</div><div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--emerald-text)">${fmt(betaald)}</div></div>
+        <div style="width:1px;background:var(--cream3)"></div>
+        <div><div class="metric-label" style="margin-bottom:6px">Openstaand</div><div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--amber-text)">${fmt(open)}</div></div>
+      </div>` : ''}
+    </div>`;
+  }
+};
+
+// ─────────────────────────────────────────────
+//  RENDER HELPERS (for search filtering)
+// ─────────────────────────────────────────────
+function renderKlantList(list) {
+  if (list.length === 0) return `<div class="empty"><i class="ti ti-users"></i><p>Geen klanten gevonden.</p></div>`;
+  return list.map((k,i) => `
+    <div class="client-item">
+      <div class="initials" style="background:${k.kleur}18;color:${k.kleur}">${k.naam.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div class="client-info">
+        <div class="client-name">${k.naam}</div>
+        <div class="client-sub">${[k.contact,k.email].filter(Boolean).join(' · ')}</div>
+      </div>
+      <span class="badge ${k.status==='Actief'?'badge-green':k.status==='Lead'?'badge-gold':'badge-amber'}">${k.status}</span>
+    </div>`).join('');
+}
+
+function renderFactuurList(list) {
+  if (list.length === 0) return `<div class="empty"><i class="ti ti-receipt"></i><p>Geen facturen gevonden.</p></div>`;
+  return list.map(f => {
+    const idx = facturen.indexOf(f);
+    return `
+    <div class="invoice-row">
+      <span class="inv-num">${f.nr||'—'}</span>
+      <span class="inv-name">${f.naam}</span>
+      ${f.vervaldatum ? `<span style="font-size:11.5px;color:var(--ink3);white-space:nowrap">${new Date(f.vervaldatum).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})}</span>` : ''}
+      <span class="inv-amt">${fmt(f.bedrag)}</span>
+      <span class="badge ${f.status==='Betaald'?'badge-green':f.status==='Openstaand'?'badge-amber':'badge-red'}">${f.status}</span>
+      <button onclick="exportFactuurPDF(${idx})" title="Download PDF" style="background:none;border:none;cursor:pointer;padding:3px 5px;color:var(--ink3);font-size:15px;line-height:1;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><i class="ti ti-file-type-pdf"></i></button>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  SEARCH / FILTER
+// ─────────────────────────────────────────────
+function filterKlanten() {
+  const q     = (document.getElementById('klant-search')?.value || '').toLowerCase();
+  const list  = document.getElementById('klant-list');
+  if (!list) return;
+  const filtered = q ? klanten.filter(k =>
+    k.naam.toLowerCase().includes(q) ||
+    (k.email||'').toLowerCase().includes(q) ||
+    (k.contact||'').toLowerCase().includes(q) ||
+    k.status.toLowerCase().includes(q)
+  ) : klanten;
+  list.innerHTML = renderKlantList(filtered);
+  const cnt = document.getElementById('klant-count');
+  if (cnt) cnt.textContent = filtered.length;
+}
+
+function filterFacturen() {
+  const q    = (document.getElementById('factuur-search')?.value || '').toLowerCase();
+  const list = document.getElementById('factuur-list');
+  if (!list) return;
+  const filtered = q ? facturen.filter(f =>
+    f.naam.toLowerCase().includes(q) ||
+    (f.nr||'').toLowerCase().includes(q) ||
+    f.status.toLowerCase().includes(q)
+  ) : facturen;
+  list.innerHTML = renderFactuurList(filtered);
+}
+
+// ─────────────────────────────────────────────
+//  TASKS
+// ─────────────────────────────────────────────
+function renderTasks() {
+  const el = document.getElementById('task-list');
+  if (!el) return;
+  el.innerHTML = tasks.length === 0
+    ? `<div class="empty"><i class="ti ti-checkbox"></i><p>Nog geen taken. Voeg ze toe hieronder.</p></div>`
+    : tasks.map((t,i) => `
+      <div class="task-item">
+        <div class="task-check ${t.done?'done':''}" onclick="toggleTask(${i})">
+          ${t.done ? '<i class="ti ti-check" style="font-size:10px;color:var(--night)"></i>' : ''}
+        </div>
+        <span class="task-text ${t.done?'done':''}">${t.text}</span>
+        <span class="task-prio">${t.prio||''}</span>
+        <button class="task-del" onclick="deleteTask(${i})" title="Verwijder"><i class="ti ti-x"></i></button>
+      </div>`).join('');
+  const open = tasks.filter(t=>!t.done).length;
+  const oc = document.getElementById('taken-open-count');
+  const dc = document.getElementById('taken-done-count');
+  if (oc) oc.textContent = open;
+  if (dc) dc.textContent = tasks.filter(t=>t.done).length;
+  updateBadge();
+}
+
+function toggleTask(i) { tasks[i].done = !tasks[i].done; saveState(); if(tasks[i].done) toast('Taak afgerond','success','ti-check'); renderTasks(); }
+function deleteTask(i) { tasks.splice(i,1); saveState(); renderTasks(); toast('Taak verwijderd','info','ti-trash'); }
+
+function addTask() {
+  const inp = document.getElementById('new-task-input');
+  const dat = document.getElementById('new-task-datum');
+  if (!inp || !inp.value.trim()) return;
+  const rawDatum = dat?.value || '';
+  const prio     = rawDatum ? new Date(rawDatum).toLocaleDateString('nl-NL',{day:'numeric',month:'short'}) : '';
+  tasks.unshift({ text: inp.value.trim(), done: false, prio, rawDatum });
+  inp.value = ''; if (dat) dat.value = '';
+  saveState(); renderTasks(); toast('Taak toegevoegd','info','ti-checkbox');
+}
+
+function clearDone() {
+  const n = tasks.filter(t=>t.done).length;
+  if (!n) { toast('Geen afgeronde taken','info','ti-info-circle'); return; }
+  tasks = tasks.filter(t=>!t.done);
+  saveState(); renderTasks(); toast(`${n} taken verwijderd`,'info','ti-trash');
+}
+
+// ─────────────────────────────────────────────
+//  KLANTEN
+// ─────────────────────────────────────────────
+const kleuren = ['#6C5CE7','#0984E3','#00B894','#E17055','#A29BFE','#FDCB6E','#C9A84C'];
+function toonKlantForm() { const f=document.getElementById('klant-form'); if(f) f.style.display = f.style.display==='none'?'block':'none'; }
+
+function addKlant() {
+  const naam = document.getElementById('kl-naam').value.trim();
+  if (!naam) { toast('Vul een bedrijfsnaam in','error','ti-alert-circle'); return; }
+  klanten.push({ naam, contact: document.getElementById('kl-contact').value.trim(), email: document.getElementById('kl-email').value.trim(), status: document.getElementById('kl-status').value, kleur: kleuren[klanten.length % kleuren.length] });
+  saveState();
+  toast('Klant toegevoegd','success','ti-check');
+  const btn = [...document.querySelectorAll('.nav-btn')].find(b=>b.getAttribute('onclick')?.includes("'klanten'"));
+  if (btn) show('klanten', btn);
+}
+
+// ─────────────────────────────────────────────
+//  FACTUREN
+// ─────────────────────────────────────────────
+function toonFactuurForm() { const f=document.getElementById('factuur-form'); if(f) f.style.display = f.style.display==='none'?'block':'none'; }
+
+function addFactuur() {
+  const naam   = document.getElementById('fac-naam').value.trim();
+  const bedrag = parseFloat(document.getElementById('fac-bedrag').value);
+  if (!naam || isNaN(bedrag)) { toast('Vul klant en bedrag in','error','ti-alert-circle'); return; }
+  const nr = document.getElementById('fac-nr').value.trim() || `${new Date().getFullYear()}-${String(facturen.length+1).padStart(3,'0')}`;
+  facturen.unshift({ naam, nr, bedrag, status: document.getElementById('fac-status').value, vervaldatum: document.getElementById('fac-verval').value, datum: new Date().toISOString() });
+  saveState();
+  toast('Factuur opgeslagen','success','ti-check');
+  const btn = [...document.querySelectorAll('.nav-btn')].find(b=>b.getAttribute('onclick')?.includes("'facturen'"));
+  if (btn) show('facturen', btn);
+}
+
+// ─────────────────────────────────────────────
+//  AI
+// ─────────────────────────────────────────────
+function buildRijkeContext() {
+  const now = new Date();
+  const openFact = facturen.filter(f=>f.status==='Openstaand');
+  const overdueFact = overdueFacturen();
+  const betaaldMaand = thisMonthTotal();
+  const prevMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const vorigeMaand = facturen.filter(f=>{
+    if(f.status!=='Betaald'||!f.datum) return false;
+    const d=new Date(f.datum);
+    return d.getMonth()===prevMonth.getMonth()&&d.getFullYear()===prevMonth.getFullYear();
+  }).reduce((s,f)=>s+f.bedrag,0);
+  const leads = klanten.filter(k=>k.status==='Lead');
+  const actieven = klanten.filter(k=>k.status==='Actief');
+  const openTaken = tasks.filter(t=>!t.done);
+  const in14 = new Date(); in14.setDate(in14.getDate()+14);
+  const soonDue = facturen.filter(f=>f.status==='Openstaand'&&f.vervaldatum&&new Date(f.vervaldatum)>=now&&new Date(f.vervaldatum)<=in14);
+  return [
+    `Gebruiker: ${userProfile.naam}`,
+    `Bedrijf: ${userProfile.bedrijf||'onbekend'}`,
+    `Vandaag: ${now.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,
+    ``,
+    `── KLANTEN (${klanten.length} totaal) ──`,
+    actieven.length?`Actief (${actieven.length}): ${actieven.map(k=>k.naam).join(', ')}`:'Geen actieve klanten.',
+    leads.length?`Leads (${leads.length}): ${leads.map(k=>k.naam+(k.email?' <'+k.email+'>':'')).join(', ')}`:'Geen leads.',
+    ``,
+    `── OMZET ──`,
+    `Deze maand (betaald): ${fmt(betaaldMaand)}`,
+    `Vorige maand: ${fmt(vorigeMaand)}`,
+    `Totaal ooit: ${fmt(facturen.filter(f=>f.status==='Betaald').reduce((s,f)=>s+f.bedrag,0))}`,
+    ``,
+    `── OPENSTAANDE FACTUREN (${openFact.length}) ──`,
+    openFact.length?openFact.map(f=>`  - ${f.naam}: ${fmt(f.bedrag)}${f.vervaldatum?' (vervalt '+new Date(f.vervaldatum).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})+')':''}${overdueFact.includes(f)?' ⚠️ VERLOPEN':''}`).join('\n'):'Geen openstaande facturen.',
+    soonDue.length?`Vervalt binnen 14 dagen: ${soonDue.map(f=>f.naam+' '+fmt(f.bedrag)).join(', ')}`:'',
+    ``,
+    `── TAKEN (${openTaken.length} open) ──`,
+    openTaken.length?openTaken.slice(0,8).map(t=>`  - ${t.text}${t.rawDatum?' ('+new Date(t.rawDatum).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})+')':''}`).join('\n'):'Geen open taken.',
+  ].filter(Boolean).join('\n');
+}
+
+async function callClaude(messages, system) {
+  const body = { model: 'claude-sonnet-4-6', max_tokens: 1000, messages };
+  if (system) body.system = system;
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'API fout ' + res.status);
+  }
+  const data = await res.json();
+  return data.content?.map(c=>c.text||'').join('') || 'Geen antwoord.';
+}
+
+
+async function aiSend() {
+  const inp = document.getElementById('chat-in');
+  if (!inp || !inp.value.trim()) return;
+  const msg = inp.value.trim(); inp.value = '';
+  appendMsg(msg, 'user');
+  chatHistory.push({ role: 'user', content: msg });
+  const id = 'typing-' + Date.now();
+  document.getElementById('chat-msgs').innerHTML += `<div class="msg msg-ai" id="${id}"><div class="typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
+  scrollChat();
+  try {
+    const system = `Je bent een premium zakelijke AI-adviseur in BusinessOS. Spreek de gebruiker aan bij naam (${userProfile.naam.split(' ')[0]}). Help bondig, professioneel en praktisch in het Nederlands. Geen markdown.
+
+Actuele bedrijfsdata:
+${buildRijkeContext()}`;
+    const reply  = await callClaude(chatHistory, system);
+    chatHistory.push({ role: 'assistant', content: reply });
+    saveState();
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = reply.replace(/\n/g,'<br>');
+  } catch(e) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<span style="color:var(--rose-text)">Fout: ${e.message}</span>`;
+  }
+  scrollChat();
+}
+
+function clearChat() { chatHistory = []; saveState(); loadPage('ai'); }
+function quickAsk(q) { const inp=document.getElementById('chat-in'); if(inp){ inp.value=q; aiSend(); } }
+function appendMsg(t, role) { const m=document.getElementById('chat-msgs'); if(m) m.innerHTML+=`<div class="msg msg-${role}">${t}</div>`; scrollChat(); }
+function scrollChat() { const m=document.getElementById('chat-msgs'); if(m) m.scrollTop=m.scrollHeight; }
+
+// ─────────────────────────────────────────────
+//  AI DASHBOARD ACTIONS
+// ─────────────────────────────────────────────
+const aiActiePrompts = {
+  facturen_open: () => {
+    const open = facturen.filter(f=>f.status==='Openstaand');
+    const totaal = open.reduce((s,f)=>s+f.bedrag,0);
+    return `Geef een beknopt overzicht van de ${open.length} openstaande facturen (totaal ${fmt(totaal)}) en een prioritering van welke als eerste te innen. Klanten: ${open.map(f=>f.naam+' '+fmt(f.bedrag)).join(', ')}. Max 3 zinnen.`;
+  },
+  herinnering: (naam) => `Schrijf een professionele maar vriendelijke betalingsherinnering in het Nederlands namens ${userProfile.naam}${userProfile.bedrijf?' ('+userProfile.bedrijf+')':''} aan ${naam}. Houd het kort: 3-4 zinnen.`,
+  soondue: (naam) => `Schrijf een korte follow-up bericht voor ${naam} om te informeren of de factuur op tijd betaald wordt. Vriendelijk en professioneel, 2-3 zinnen.`,
+  taken_urgent: () => {
+    const urgent = upcomingTasks().filter(t=>{ const d=new Date(t.rawDatum); return (d-new Date())/86400000<=2; });
+    return `Ik heb ${urgent.length} urgente taken: ${urgent.map(t=>t.text).join(', ')}. Geef per taak één concrete eerste actie. Bondig.`;
+  },
+  omzet_doel: () => {
+    const maand = thisMonthTotal();
+    const now = new Date();
+    const dagInMaand = now.getDate();
+    const dagenInMaand = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    return `Ik heb deze maand ${fmt(maand)} omgezet. Er zijn nog ${dagenInMaand-dagInMaand} dagen. Geef 3 concrete acties om meer omzet te genereren, afgestemd op een zzp'er/mkb. Bondig.`;
+  },
+  leads: (namen) => `Schrijf een korte, warme follow-up e-mail aan mijn leads (${namen}) om te vragen of er interesse is om verder te praten. Namens ${userProfile.naam}${userProfile.bedrijf?' van '+userProfile.bedrijf:''}. Max 5 zinnen.`,
+  intro: () => `Ik gebruik BusinessOS als zakelijk management systeem. Geef me 3 concrete tips om het maximale uit mijn bedrijfsvoering te halen. Bondig en praktisch.`,
+};
+
+function showAiLoading() {
+  const area = document.getElementById('ai-response-area');
+  if (area) area.innerHTML = `<div class="ai-loading"><div class="typing-dots"><span class="dot" style="background:rgba(255,255,255,0.3)"></span><span class="dot" style="background:rgba(255,255,255,0.3)"></span><span class="dot" style="background:rgba(255,255,255,0.3)"></span></div><span>AI analyseert je data...</span></div>`;
+}
+
+function showAiResponse(text) {
+  const area = document.getElementById('ai-response-area');
+  if (area) area.innerHTML = `<div class="ai-resp"><div class="ai-resp-text">${text.replace(/\n/g,'<br>')}</div></div>`;
+}
+
+async function aiActie(type, param) {
+  const promptFn = aiActiePrompts[type];
+  if (!promptFn) return;
+  showAiLoading();
+  try {
+    const system = `Je bent een premium zakelijke AI-adviseur in BusinessOS. Spreek de gebruiker aan bij naam (${userProfile.naam.split(' ')[0]}). Geef praktisch, bondig advies in het Nederlands. Geen markdown.
+
+Actuele bedrijfsdata:
+${buildRijkeContext()}`;
+    const prompt = promptFn(param);
+    const reply = await callClaude([{role:'user',content:prompt}], system);
+    showAiResponse(reply);
+  } catch(e) {
+    const area = document.getElementById('ai-response-area');
+    if (area) area.innerHTML = `<div class="ai-resp"><div style="color:#F87171;font-size:13px">Fout: ${e.message}</div></div>`;
+  }
+}
+
+async function aiDashAsk() {
+  const inp = document.getElementById('ai-dash-input');
+  if (!inp || !inp.value.trim()) return;
+  const vraag = inp.value.trim(); inp.value = '';
+  showAiLoading();
+  try {
+    const system = `Je bent een premium zakelijke AI-adviseur in BusinessOS. Spreek de gebruiker aan bij naam (${userProfile.naam.split(' ')[0]}). Geef bondig, praktisch advies in het Nederlands. Geen markdown.\n\nActuele bedrijfsdata:\n${buildRijkeContext()}`;
+    const reply = await callClaude([{role:'user',content:vraag}], system);
+    showAiResponse(reply);
+  } catch(e) {
+    const area = document.getElementById('ai-response-area');
+    if (area) area.innerHTML = `<div class="ai-resp"><div style="color:#F87171;font-size:13px">Fout: ${e.message}</div></div>`;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  VOORSTEL + PDF EXPORT
+// ─────────────────────────────────────────────
+async function aiVoorstel() {
+  const klant       = document.getElementById('v-klant')?.value || 'de klant';
+  const onderwerp   = document.getElementById('v-onderwerp')?.value || 'het project';
+  const omschrijving= document.getElementById('v-omschrijving')?.value || '';
+  const bedrag      = document.getElementById('v-bedrag')?.value || '';
+  const geldig      = document.getElementById('v-geldig')?.value || '';
+  const out         = document.getElementById('voorstel-output');
+  if (!out) return;
+  out.innerHTML = `<div class="card" style="color:var(--ink3)"><div class="typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>&nbsp; AI schrijft voorstel...</div>`;
+  try {
+    const text = await callClaude([{role:'user',content:`Schrijf een professioneel zakelijk voorstel in het Nederlands namens ${userProfile.naam}${userProfile.bedrijf?' ('+userProfile.bedrijf+')':''} voor:\nKlant: ${klant}\nOnderwerp: ${onderwerp}\nOmschrijving: ${omschrijving}\nBedrag: ${bedrag?'€ '+bedrag:'nader te bepalen'}\n${geldig?'Geldig tot: '+new Date(geldig).toLocaleDateString('nl-NL'):''}\n\nHoud het bondig: aanhef, intro, wat we leveren, bedrag, geldigheid, afsluiting. Geen markdown, gewone alinea's.`}]);
+    out.innerHTML = `
+      <div class="voorstel-card">
+        <div class="section-label">Gegenereerd voorstel</div>
+        <div id="voorstel-tekst" style="font-size:13px;line-height:1.75;white-space:pre-wrap;color:var(--ink)">${text}</div>
+        <div style="margin-top:16px" class="btn-row">
+          <button class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('voorstel-tekst').textContent);toast('Gekopieerd','success','ti-check')"><i class="ti ti-copy"></i>Kopiëren</button>
+          <button class="btn btn-gold btn-sm" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>Download PDF</button>
+        </div>
+      </div>`;
+    toast('Voorstel klaar','success','ti-sparkles');
+  } catch(e) {
+    out.innerHTML = `<div class="card" style="color:var(--rose-text)">Fout: ${e.message}</div>`;
+    toast('Genereren mislukt','error','ti-alert-circle');
+  }
+}
+
+// ─── Shared PDF helpers ───────────────────────
+function pdfHeader(doc, docType) {
+  // Gold top bar
+  doc.setFillColor(168, 136, 58);
+  doc.rect(0, 0, 210, 22, 'F');
+  // Subtle bottom accent
+  doc.setFillColor(226, 196, 122);
+  doc.rect(0, 20, 210, 2, 'F');
+
+  // Company name
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text(userProfile.bedrijf || userProfile.naam, 14, 13);
+
+  // Document type label (top right)
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(255, 248, 220);
+  doc.text(docType.toUpperCase(), 196, 13, { align: 'right' });
+
+  // Contact line under company
+  doc.setTextColor(255, 248, 220);
+  doc.setFontSize(7.5);
+  const contactParts = [userProfile.email, userProfile.telefoon].filter(Boolean);
+  if (contactParts.length) doc.text(contactParts.join('  ·  '), 14, 18.5);
+}
+
+function pdfFooter(doc) {
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p++) {
+    doc.setPage(p);
+    doc.setDrawColor(226, 221, 212);
+    doc.line(14, 283, 196, 283);
+    doc.setFontSize(7.5);
+    doc.setTextColor(170, 170, 170);
+    doc.text(userProfile.naam + (userProfile.bedrijf ? '  ·  ' + userProfile.bedrijf : ''), 14, 288);
+    doc.text(`${p} / ${total}`, 196, 288, { align: 'right' });
+  }
+}
+
+function pdfBlock(doc, lines, startY) {
+  let y = startY;
+  const pageH = 297, margin = 14, lineH = 5.4;
+  lines.forEach(line => {
+    if (y + lineH > pageH - 20) { doc.addPage(); y = 30; }
+    doc.text(line, margin, y);
+    y += lineH;
+  });
+  return y;
+}
+
+// ─── Voorstel PDF ────────────────────────────
+function exportPDF() {
+  const tekst = document.getElementById('voorstel-tekst')?.textContent;
+  if (!tekst) return;
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    pdfHeader(doc, 'Voorstel');
+
+    // Date + reference block (right side)
+    const dateStr = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(113, 128, 150);
+    doc.text('Datum', 196, 32, { align: 'right' });
+    doc.setTextColor(10, 14, 26);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(dateStr, 196, 37.5, { align: 'right' });
+
+    // Horizontal divider
+    doc.setDrawColor(226, 221, 212);
+    doc.line(14, 43, 196, 43);
+
+    // Body text
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(10, 14, 26);
+    const lines = doc.splitTextToSize(tekst, 182);
+    pdfBlock(doc, lines, 51);
+
+    pdfFooter(doc);
+    doc.save(`voorstel-${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast('Voorstel PDF gedownload', 'success', 'ti-file-type-pdf');
+  } catch(e) {
+    toast('PDF mislukt: ' + e.message, 'error', 'ti-alert-circle');
+    console.error(e);
+  }
+}
+
+// ─── Factuur PDF ─────────────────────────────
+function exportFactuurPDF(idx) {
+  const f = facturen[idx];
+  if (!f) return;
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    pdfHeader(doc, 'Factuur');
+
+    const nu = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── Factuurinfo block (left) ──
+    let y = 32;
+    doc.setFontSize(8);
+    doc.setTextColor(113, 128, 150);
+    doc.setFont('helvetica', 'normal');
+    doc.text('FACTUURNUMMER', 14, y);
+    doc.setFontSize(10.5);
+    doc.setTextColor(10, 14, 26);
+    doc.setFont('helvetica', 'bold');
+    doc.text(f.nr || `${new Date().getFullYear()}-001`, 14, y + 5);
+
+    doc.setFontSize(8);
+    doc.setTextColor(113, 128, 150);
+    doc.setFont('helvetica', 'normal');
+    doc.text('FACTUURDATUM', 14, y + 13);
+    doc.setFontSize(10);
+    doc.setTextColor(10, 14, 26);
+    doc.setFont('helvetica', 'bold');
+    doc.text(nu, 14, y + 18);
+
+    if (f.vervaldatum) {
+      doc.setFontSize(8);
+      doc.setTextColor(113, 128, 150);
+      doc.setFont('helvetica', 'normal');
+      doc.text('VERVALDATUM', 14, y + 26);
+      doc.setFontSize(10);
+      doc.setTextColor(10, 14, 26);
+      doc.setFont('helvetica', 'bold');
+      doc.text(new Date(f.vervaldatum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }), 14, y + 31);
+    }
+
+    // ── Klant block (right) ──
+    doc.setFontSize(8);
+    doc.setTextColor(113, 128, 150);
+    doc.setFont('helvetica', 'normal');
+    doc.text('FACTUUR AAN', 120, y);
+    doc.setFontSize(11);
+    doc.setTextColor(10, 14, 26);
+    doc.setFont('helvetica', 'bold');
+    doc.text(f.naam, 120, y + 5);
+    if (f.contact) {
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(74, 85, 104);
+      doc.text(f.contact, 120, y + 11);
+    }
+
+    // ── Divider ──
+    y = 70;
+    doc.setFillColor(168, 136, 58);
+    doc.rect(14, y, 182, 0.4, 'F');
+    y += 8;
+
+    // ── Line items table header ──
+    doc.setFillColor(247, 244, 239);
+    doc.rect(14, y - 4, 182, 10, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(113, 128, 150);
+    doc.text('OMSCHRIJVING', 17, y + 2);
+    doc.text('BEDRAG', 193, y + 2, { align: 'right' });
+    y += 10;
+
+    // ── Single line item (can be extended later) ──
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(10, 14, 26);
+    const omschr = f.omschrijving || f.naam;
+    const omschrLines = doc.splitTextToSize(omschr, 140);
+    omschrLines.forEach((line, i) => { doc.text(line, 17, y + (i * 5.5)); });
+    doc.setFont('helvetica', 'bold');
+    doc.text(fmt(f.bedrag), 193, y, { align: 'right' });
+    y += Math.max(omschrLines.length * 5.5, 6) + 6;
+
+    // ── Subtotals ──
+    doc.setDrawColor(226, 221, 212);
+    doc.line(120, y, 196, y);
+    y += 6;
+
+    const btw = Math.round(f.bedrag * 0.21 * 100) / 100;
+    const exBtw = Math.round((f.bedrag / 1.21) * 100) / 100;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(113, 128, 150);
+    doc.text('Subtotaal (excl. BTW)', 120, y);
+    doc.text(fmt(exBtw), 193, y, { align: 'right' });
+    y += 6;
+    doc.text('BTW 21%', 120, y);
+    doc.text(fmt(btw), 193, y, { align: 'right' });
+    y += 2;
+
+    // ── Total box ──
+    doc.setFillColor(168, 136, 58);
+    doc.rect(120, y + 1, 76, 11, 'F');
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('Totaal incl. BTW', 123, y + 7.5);
+    doc.text(fmt(f.bedrag), 193, y + 7.5, { align: 'right' });
+    y += 20;
+
+    // ── Status badge ──
+    const statusColor = f.status === 'Betaald' ? [16, 185, 129] : f.status === 'Openstaand' ? [245, 158, 11] : [244, 63, 94];
+    doc.setFillColor(...statusColor);
+    doc.roundedRect(14, y, 28, 7, 1.5, 1.5, 'F');
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(f.status.toUpperCase(), 28, y + 4.7, { align: 'center' });
+    y += 16;
+
+    // ── Payment note ──
+    if (f.status === 'Openstaand') {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(113, 128, 150);
+      const note = `Gelieve het bedrag van ${fmt(f.bedrag)} over te maken${f.vervaldatum ? ' vóór ' + new Date(f.vervaldatum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}.`;
+      const noteLines = doc.splitTextToSize(note, 182);
+      noteLines.forEach((line, i) => { doc.text(line, 14, y + (i * 5)); });
+    }
+
+    pdfFooter(doc);
+    doc.save(`factuur-${(f.nr || 'factuur').replace(/[^a-z0-9]/gi, '-')}.pdf`);
+    toast('Factuur PDF gedownload', 'success', 'ti-file-type-pdf');
+  } catch(e) {
+    toast('PDF mislukt: ' + e.message, 'error', 'ti-alert-circle');
+    console.error(e);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+if (loadState()) {
+  launchApp();
+}
+</script>
+</body>
+</html>
